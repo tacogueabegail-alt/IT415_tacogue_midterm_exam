@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -131,6 +131,32 @@
             border-radius: 20px;
             font-size: 13px;
             font-weight: bold;
+        }
+
+        .role-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .role-control label {
+            margin: 0;
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .role-control select {
+            min-width: 135px;
+            padding: 8px 11px;
+            border: 1px solid #c7d2fe;
+            border-radius: 20px;
+            background: #eef2ff;
+            color: #3730a3;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
         }
 
         .content {
@@ -703,7 +729,12 @@
                 font-size: 16px;
             }
 
-            .role-badge {
+            .role-control label {
+                display: none;
+            }
+
+            .role-control select {
+                min-width: 120px;
                 font-size: 10px;
                 padding: 6px 9px;
             }
@@ -773,8 +804,12 @@
                 <p>Computer Laboratory Reservation System</p>
             </div>
 
-            <div class="role-badge">
-                Coordinator Mode
+            <div class="role-control">
+                <label for="roleSelect">Role</label>
+                <select id="roleSelect" onchange="changeRole(this.value)">
+                    <option value="Coordinator">Coordinator</option>
+                    <option value="Teacher">Teacher</option>
+                </select>
             </div>
 
         </header>
@@ -1395,6 +1430,50 @@
         }
 
     ];
+
+
+    /* ==========================================================
+       USER ROLE
+       Coordinator can approve/reject reservations.
+       Teacher can create and cancel reservations.
+       The reservation system remains in-memory.
+    ========================================================== */
+
+    let currentRole = "Coordinator";
+
+
+    function changeRole(role) {
+
+        currentRole = role;
+
+        const roleSelect =
+            document.getElementById("roleSelect");
+
+        if (roleSelect) {
+            roleSelect.value = currentRole;
+        }
+
+        const roleControl =
+            document.querySelector(".role-control");
+
+        if (roleControl) {
+            roleControl.classList.toggle(
+                "teacher-role",
+                currentRole === "Teacher"
+            );
+        }
+
+        renderReservations();
+
+        updateDashboard();
+
+        showAlert(
+            currentRole === "Coordinator"
+                ? "Coordinator role active. Approval and rejection controls are enabled."
+                : "Teacher role active. You can create and cancel reservations, but cannot approve or reject them.",
+            "success"
+        );
+    }
 
 
     /* ==========================================================
@@ -2143,10 +2222,15 @@
 
     function renderReservationRow(reservation) {
 
+        const isCoordinator =
+            currentRole === "Coordinator";
+
         const canApprove =
+            isCoordinator &&
             reservation.status === "Pending";
 
         const canReject =
+            isCoordinator &&
             reservation.status === "Pending";
 
         const canCancel =
@@ -2268,6 +2352,14 @@
 
     function approveReservation(id) {
 
+        if (currentRole !== "Coordinator") {
+            showAlert(
+                "Only the Coordinator can approve reservations.",
+                "error"
+            );
+            return;
+        }
+
         const reservation =
             reservations.find(
                 r => r.id === id
@@ -2357,6 +2449,14 @@
 
     function openRejectModal(id) {
 
+        if (currentRole !== "Coordinator") {
+            showAlert(
+                "Only the Coordinator can reject reservations.",
+                "error"
+            );
+            return;
+        }
+
         const reservation =
             reservations.find(
                 r => r.id === id
@@ -2407,6 +2507,15 @@
 
 
     function confirmReject() {
+
+        if (currentRole !== "Coordinator") {
+            showAlert(
+                "Only the Coordinator can reject reservations.",
+                "error"
+            );
+            closeRejectModal();
+            return;
+        }
 
         const id =
             document.getElementById(
