@@ -1,0 +1,2931 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Institute of Computing - Laboratory Reservation System</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f9;
+            color: #1f2937;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+        }
+
+        /* =========================
+           LAYOUT
+        ========================= */
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #172033;
+            color: white;
+            padding: 24px 16px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .brand {
+            padding: 0 12px 28px;
+            border-bottom: 1px solid rgba(255,255,255,.12);
+            margin-bottom: 22px;
+        }
+
+        .brand h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .brand p {
+            color: #aeb8ca;
+            font-size: 12px;
+        }
+
+        .nav-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #7f8ba1;
+            margin: 0 12px 10px;
+            letter-spacing: .8px;
+        }
+
+        .nav button {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: #cbd5e1;
+            text-align: left;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav button:hover,
+        .nav button.active {
+            background: #29364f;
+            color: white;
+        }
+
+        .nav-icon {
+            display: inline-block;
+            width: 25px;
+        }
+
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: white;
+            height: 70px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .topbar-title h2 {
+            font-size: 20px;
+        }
+
+        .topbar-title p {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 3px;
+        }
+
+        .role-badge {
+            background: #eef2ff;
+            color: #3730a3;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+            max-width: 1600px;
+            margin: auto;
+        }
+
+        /* =========================
+           SECTIONS
+        ========================= */
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .section-header h2 {
+            font-size: 23px;
+        }
+
+        .section-header p {
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        /* =========================
+           DASHBOARD
+        ========================= */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.03);
+        }
+
+        .stat-card .stat-label {
+            color: #6b7280;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .stat-number {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .stat-card.pending .stat-number {
+            color: #d97706;
+        }
+
+        .stat-card.approved .stat-number {
+            color: #059669;
+        }
+
+        .stat-card.rejected .stat-number {
+            color: #dc2626;
+        }
+
+        .stat-card.cancelled .stat-number {
+            color: #6b7280;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.03);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 18px;
+        }
+
+        /* =========================
+           FORM
+        ========================= */
+
+        .form-card {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 7px;
+            color: #374151;
+        }
+
+        input,
+        select,
+        textarea {
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            padding: 11px 12px;
+            outline: none;
+            background: white;
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .capacity-info {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 7px;
+            padding: 10px 12px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .form-actions {
+            margin-top: 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* =========================
+           BUTTONS
+        ========================= */
+
+        .btn {
+            border: none;
+            border-radius: 7px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-warning {
+            background: #d97706;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-small {
+            padding: 7px 10px;
+            font-size: 11px;
+        }
+
+        /* =========================
+           TABLE
+        ========================= */
+
+        .table-card {
+            overflow: hidden;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1050px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: .5px;
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 13px 12px;
+            border-bottom: 1px solid #edf0f3;
+            font-size: 12px;
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background: #fafafa;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-cancelled {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state strong {
+            display: block;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        /* =========================
+           SCHEDULE
+        ========================= */
+
+        .schedule-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .schedule-item {
+            display: grid;
+            grid-template-columns: 130px 1fr 150px 100px;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 9px;
+            background: white;
+        }
+
+        .schedule-time {
+            font-weight: bold;
+            color: #4f46e5;
+        }
+
+        .schedule-main strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .schedule-main span {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        /* =========================
+           LAB CARDS
+        ========================= */
+
+        .labs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .lab-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 22px;
+        }
+
+        .lab-card h3 {
+            margin-bottom: 8px;
+        }
+
+        .lab-card p {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .seat-number {
+            font-size: 30px;
+            font-weight: bold;
+            margin: 18px 0 4px;
+            color: #4f46e5;
+        }
+
+        /* =========================
+           MODAL
+        ========================= */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 15px 50px rgba(0,0,0,.2);
+        }
+
+        .modal h3 {
+            margin-bottom: 8px;
+        }
+
+        .modal p {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        /* =========================
+           ALERT
+        ========================= */
+
+        #alertContainer {
+            position: fixed;
+            top: 85px;
+            right: 25px;
+            width: 360px;
+            z-index: 200;
+        }
+
+        .alert {
+            background: white;
+            border-radius: 9px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+            box-shadow: 0 5px 20px rgba(0,0,0,.12);
+            font-size: 13px;
+            animation: slideIn .25s ease;
+        }
+
+        .alert.success {
+            border-color: #10b981;
+        }
+
+        .alert.error {
+            border-color: #ef4444;
+        }
+
+        .alert.warning {
+            border-color: #f59e0b;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 1100px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .labs-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .sidebar {
+                width: 70px;
+                padding: 15px 8px;
+            }
+
+            .brand h1,
+            .brand p,
+            .nav-title,
+            .nav button span {
+                display: none;
+            }
+
+            .brand {
+                text-align: center;
+            }
+
+            .nav button {
+                text-align: center;
+            }
+
+            .nav-icon {
+                width: auto;
+            }
+
+            .main {
+                margin-left: 70px;
+                width: calc(100% - 70px);
+            }
+
+            .content {
+                padding: 18px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: auto;
+            }
+
+            .schedule-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+            .topbar-title h2 {
+                font-size: 16px;
+            }
+
+            .role-badge {
+                font-size: 10px;
+                padding: 6px 9px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+            <h1>IC LabReserve</h1>
+            <p>Institute of Computing</p>
+        </div>
+
+        <div class="nav-title">Main Menu</div>
+
+        <div class="nav">
+
+            <button class="active" onclick="showPage('dashboard', this)">
+                <span class="nav-icon">▦</span>
+                <span>Dashboard</span>
+            </button>
+
+            <button onclick="showPage('reservation', this)">
+                <span class="nav-icon">＋</span>
+                <span>New Reservation</span>
+            </button>
+
+            <button onclick="showPage('reservations', this)">
+                <span class="nav-icon">▤</span>
+                <span>Reservations</span>
+            </button>
+
+            <button onclick="showPage('schedule', this)">
+                <span class="nav-icon">◷</span>
+                <span>Lab Schedule</span>
+            </button>
+
+            <button onclick="showPage('labs', this)">
+                <span class="nav-icon">▥</span>
+                <span>Laboratories</span>
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div class="topbar-title">
+                <h2 id="pageTitle">Dashboard</h2>
+                <p>Computer Laboratory Reservation System</p>
+            </div>
+
+            <div class="role-badge">
+                Coordinator Mode
+            </div>
+
+        </header>
+
+
+        <div class="content">
+
+            <!-- =========================
+                 DASHBOARD
+            ========================== -->
+
+            <section id="dashboard" class="page-section active">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Dashboard</h2>
+                        <p>Overview of laboratory reservation requests.</p>
+                    </div>
+
+                    <button class="btn btn-primary"
+                            onclick="goToNewReservation()">
+                        + New Reservation
+                    </button>
+                </div>
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+                        <div class="stat-label">TOTAL RESERVATIONS</div>
+                        <div class="stat-number" id="totalCount">0</div>
+                    </div>
+
+                    <div class="stat-card pending">
+                        <div class="stat-label">PENDING</div>
+                        <div class="stat-number" id="pendingCount">0</div>
+                    </div>
+
+                    <div class="stat-card approved">
+                        <div class="stat-label">APPROVED</div>
+                        <div class="stat-number" id="approvedCount">0</div>
+                    </div>
+
+                    <div class="stat-card rejected">
+                        <div class="stat-label">REJECTED</div>
+                        <div class="stat-number" id="rejectedCount">0</div>
+                    </div>
+
+                    <div class="stat-card cancelled">
+                        <div class="stat-label">CANCELLED</div>
+                        <div class="stat-number" id="cancelledCount">0</div>
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-title">
+                        Recent Reservations
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Teacher</th>
+                                    <th>Laboratory</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Students</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="recentReservationsBody"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 NEW RESERVATION
+            ========================== -->
+
+            <section id="reservation" class="page-section">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Create Reservation</h2>
+                        <p>Teachers can submit a request for a computer laboratory.</p>
+                    </div>
+                </div>
+
+
+                <div class="card form-card">
+
+                    <form id="reservationForm">
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+                                <label for="teacherName">
+                                    Teacher Name *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="teacherName"
+                                    placeholder="Enter teacher name"
+                                    required
+                                >
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="lab">
+                                    Laboratory *
+                                </label>
+
+                                <select id="lab" required>
+                                    <option value="">Select laboratory</option>
+                                    <option value="ComLab 1">ComLab 1 — 40 seats</option>
+                                    <option value="ComLab 2">ComLab 2 — 30 seats</option>
+                                    <option value="AES">AES — 25 seats</option>
+                                </select>
+
+                                <div class="capacity-info" id="capacityInfo">
+                                    Select a laboratory to see its capacity.
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="reservationDate">
+                                    Date *
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="reservationDate"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="numberOfStudents">
+                                    Number of Students *
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="numberOfStudents"
+                                    min="1"
+                                    placeholder="e.g. 35"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="startTime">
+                                    Start Time *
+                                </label>
+
+                                <input
+                                    type="time"
+                                    id="startTime"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="endTime">
+                                    End Time *
+                                </label>
+
+                                <input
+                                    type="time"
+                                    id="endTime"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group full">
+
+                                <label for="purpose">
+                                    Purpose *
+                                </label>
+
+                                <textarea
+                                    id="purpose"
+                                    placeholder="Describe the purpose of the laboratory reservation..."
+                                    required
+                                ></textarea>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-actions">
+
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                onclick="resetReservationForm()">
+                                Clear
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary">
+                                Submit Reservation
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 RESERVATIONS
+            ========================== -->
+
+            <section id="reservations" class="page-section">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Reservations</h2>
+                        <p>Search, review, approve, reject, or cancel reservations.</p>
+                    </div>
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="goToNewReservation()">
+                        + New Reservation
+                    </button>
+
+                </div>
+
+
+                <div class="card table-card">
+
+                    <div class="filters">
+
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Search teacher, purpose, or reservation ID..."
+                            oninput="renderReservations()"
+                        >
+
+                        <select id="filterLab" onchange="renderReservations()">
+                            <option value="">All Labs</option>
+                            <option value="ComLab 1">ComLab 1</option>
+                            <option value="ComLab 2">ComLab 2</option>
+                            <option value="AES">AES</option>
+                        </select>
+
+                        <input
+                            type="date"
+                            id="filterDate"
+                            onchange="renderReservations()"
+                        >
+
+                        <select id="filterStatus" onchange="renderReservations()">
+                            <option value="">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+
+                        <button
+                            class="btn btn-secondary"
+                            onclick="clearFilters()">
+                            Clear Filters
+                        </button>
+
+                    </div>
+
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Reservation ID</th>
+                                    <th>Teacher</th>
+                                    <th>Lab</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Students</th>
+                                    <th>Purpose</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="reservationsBody"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 SCHEDULE
+            ========================== -->
+
+            <section id="schedule" class="page-section">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Laboratory Schedule</h2>
+                        <p>View approved and pending reservations for a selected laboratory and date.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="schedule-controls">
+
+                        <select id="scheduleLab">
+                            <option value="ComLab 1">ComLab 1</option>
+                            <option value="ComLab 2">ComLab 2</option>
+                            <option value="AES">AES</option>
+                        </select>
+
+                        <input
+                            type="date"
+                            id="scheduleDate"
+                        >
+
+                        <button
+                            class="btn btn-primary"
+                            onclick="renderSchedule()">
+                            View Schedule
+                        </button>
+
+                    </div>
+
+
+                    <div id="scheduleList" class="schedule-list"></div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 LABORATORIES
+            ========================== -->
+
+            <section id="labs" class="page-section">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Laboratories</h2>
+                        <p>Available computer laboratories and their seating capacities.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="labs-grid">
+
+                    <div class="lab-card">
+
+                        <h3>ComLab 1</h3>
+
+                        <p>
+                            Computer Laboratory 1
+                        </p>
+
+                        <div class="seat-number">
+                            40
+                        </div>
+
+                        <p>
+                            Maximum number of students
+                        </p>
+
+                    </div>
+
+
+                    <div class="lab-card">
+
+                        <h3>ComLab 2</h3>
+
+                        <p>
+                            Computer Laboratory 2
+                        </p>
+
+                        <div class="seat-number">
+                            30
+                        </div>
+
+                        <p>
+                            Maximum number of students
+                        </p>
+
+                    </div>
+
+
+                    <div class="lab-card">
+
+                        <h3>AES</h3>
+
+                        <p>
+                            AES Laboratory
+                        </p>
+
+                        <div class="seat-number">
+                            25
+                        </div>
+
+                        <p>
+                            Maximum number of students
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- =========================
+     ALERT CONTAINER
+========================== -->
+
+<div id="alertContainer"></div>
+
+
+<!-- =========================
+     REJECTION MODAL
+========================== -->
+
+<div id="rejectModal" class="modal-overlay">
+
+    <div class="modal">
+
+        <h3>Reject Reservation</h3>
+
+        <p>
+            Please provide a reason for rejecting this reservation.
+        </p>
+
+        <input
+            type="hidden"
+            id="rejectReservationId"
+        >
+
+        <div class="form-group">
+
+            <label for="rejectReason">
+                Rejection Reason *
+            </label>
+
+            <textarea
+                id="rejectReason"
+                placeholder="Enter the reason for rejection..."
+            ></textarea>
+
+        </div>
+
+        <div class="modal-actions">
+
+            <button
+                class="btn btn-secondary"
+                onclick="closeRejectModal()">
+                Cancel
+            </button>
+
+            <button
+                class="btn btn-danger"
+                onclick="confirmReject()">
+                Reject Reservation
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /* ==========================================================
+       IN-MEMORY DATA
+       No database is used.
+    ========================================================== */
+
+    const LAB_CAPACITIES = {
+        "ComLab 1": 40,
+        "ComLab 2": 30,
+        "AES": 25
+    };
+
+
+    /*
+        Reservation object structure:
+
+        {
+            id,
+            teacherName,
+            lab,
+            date,
+            startTime,
+            endTime,
+            purpose,
+            numberOfStudents,
+            status,
+            rejectionReason,
+            createdAt
+        }
+    */
+
+    let reservations = [
+
+        {
+            id: "RES-001",
+            teacherName: "Maria Santos",
+            lab: "ComLab 1",
+            date: "2026-10-08",
+            startTime: "08:00",
+            endTime: "10:00",
+            purpose: "Programming Laboratory",
+            numberOfStudents: 35,
+            status: "Approved",
+            rejectionReason: "",
+            createdAt: "2026-10-07T08:00:00"
+        },
+
+        {
+            id: "RES-002",
+            teacherName: "Juan Dela Cruz",
+            lab: "ComLab 2",
+            date: "2026-10-08",
+            startTime: "09:00",
+            endTime: "11:00",
+            purpose: "Database Management Activity",
+            numberOfStudents: 28,
+            status: "Pending",
+            rejectionReason: "",
+            createdAt: "2026-10-07T09:00:00"
+        },
+
+        {
+            id: "RES-003",
+            teacherName: "Ana Reyes",
+            lab: "AES",
+            date: "2026-10-09",
+            startTime: "13:00",
+            endTime: "15:00",
+            purpose: "Computer Fundamentals",
+            numberOfStudents: 20,
+            status: "Pending",
+            rejectionReason: "",
+            createdAt: "2026-10-07T10:00:00"
+        },
+
+        {
+            id: "RES-004",
+            teacherName: "Pedro Garcia",
+            lab: "ComLab 1",
+            date: "2026-10-07",
+            startTime: "13:00",
+            endTime: "15:00",
+            purpose: "Web Development",
+            numberOfStudents: 32,
+            status: "Rejected",
+            rejectionReason: "Laboratory maintenance scheduled during the requested period.",
+            createdAt: "2026-10-06T10:00:00"
+        }
+
+    ];
+
+
+    /* ==========================================================
+       INITIALIZATION
+    ========================================================== */
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        setMinimumDates();
+
+        updateCapacityInfo();
+
+        updateDashboard();
+
+        renderReservations();
+
+        setDefaultScheduleDate();
+
+        renderSchedule();
+
+    });
+
+
+    /* ==========================================================
+       NAVIGATION
+    ========================================================== */
+
+    function showPage(pageId, button) {
+
+        document.querySelectorAll(".page-section")
+            .forEach(section => section.classList.remove("active"));
+
+        const page = document.getElementById(pageId);
+
+        if (page) {
+            page.classList.add("active");
+        }
+
+
+        document.querySelectorAll(".nav button")
+            .forEach(btn => btn.classList.remove("active"));
+
+        if (button) {
+            button.classList.add("active");
+        }
+
+
+        const titles = {
+            dashboard: "Dashboard",
+            reservation: "New Reservation",
+            reservations: "Reservations",
+            schedule: "Laboratory Schedule",
+            labs: "Laboratories"
+        };
+
+        document.getElementById("pageTitle").textContent =
+            titles[pageId] || "IC LabReserve";
+
+
+        if (pageId === "dashboard") {
+            updateDashboard();
+        }
+
+        if (pageId === "reservations") {
+            renderReservations();
+        }
+
+        if (pageId === "schedule") {
+            renderSchedule();
+        }
+
+    }
+
+
+    function goToNewReservation() {
+
+        const reservationButton =
+            document.querySelector(
+                ".nav button:nth-child(2)"
+            );
+
+        showPage("reservation", reservationButton);
+
+    }
+
+
+    /* ==========================================================
+       DATE HELPERS
+    ========================================================== */
+
+    function setMinimumDates() {
+
+        const today = getLocalDateString();
+
+        document.getElementById("reservationDate").min = today;
+
+    }
+
+
+    function setDefaultScheduleDate() {
+
+        document.getElementById("scheduleDate").value =
+            getLocalDateString();
+
+    }
+
+
+    function getLocalDateString() {
+
+        const date = new Date();
+
+        const year = date.getFullYear();
+
+        const month = String(date.getMonth() + 1)
+            .padStart(2, "0");
+
+        const day = String(date.getDate())
+            .padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+
+    }
+
+
+    /* ==========================================================
+       LAB CAPACITY
+    ========================================================== */
+
+    document.getElementById("lab").addEventListener(
+        "change",
+        updateCapacityInfo
+    );
+
+
+    function updateCapacityInfo() {
+
+        const lab =
+            document.getElementById("lab").value;
+
+        const info =
+            document.getElementById("capacityInfo");
+
+        const students =
+            document.getElementById("numberOfStudents").value;
+
+
+        if (!lab) {
+
+            info.textContent =
+                "Select a laboratory to see its capacity.";
+
+            return;
+
+        }
+
+
+        const capacity =
+            LAB_CAPACITIES[lab];
+
+
+        info.textContent =
+            `${lab} has ${capacity} seats. ` +
+            (students
+                ? `${students} student(s) entered.`
+                : "Enter the number of students.");
+
+    }
+
+
+    document.getElementById("numberOfStudents")
+        .addEventListener(
+            "input",
+            updateCapacityInfo
+        );
+
+
+    /* ==========================================================
+       RESERVATION SUBMISSION
+    ========================================================== */
+
+    document.getElementById("reservationForm")
+        .addEventListener(
+            "submit",
+            handleReservationSubmit
+        );
+
+
+    function handleReservationSubmit(event) {
+
+        event.preventDefault();
+
+
+        const teacherName =
+            document.getElementById("teacherName")
+                .value.trim();
+
+        const lab =
+            document.getElementById("lab").value;
+
+        const date =
+            document.getElementById("reservationDate").value;
+
+        const startTime =
+            document.getElementById("startTime").value;
+
+        const endTime =
+            document.getElementById("endTime").value;
+
+        const purpose =
+            document.getElementById("purpose")
+                .value.trim();
+
+        const numberOfStudents =
+            Number(
+                document.getElementById("numberOfStudents")
+                    .value
+            );
+
+
+        /* -----------------------------------------
+           BASIC VALIDATION
+        ----------------------------------------- */
+
+        if (
+            !teacherName ||
+            !lab ||
+            !date ||
+            !startTime ||
+            !endTime ||
+            !purpose ||
+            !numberOfStudents
+        ) {
+
+            showAlert(
+                "Please complete all required fields.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /* -----------------------------------------
+           TIME VALIDATION
+        ----------------------------------------- */
+
+        if (startTime >= endTime) {
+
+            showAlert(
+                "The end time must be later than the start time.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /* -----------------------------------------
+           SEAT CAPACITY VALIDATION
+        ----------------------------------------- */
+
+        const capacity =
+            LAB_CAPACITIES[lab];
+
+
+        if (numberOfStudents > capacity) {
+
+            showAlert(
+                `${lab} only has ${capacity} seats. ` +
+                `The reservation cannot exceed the laboratory capacity.`,
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        if (numberOfStudents < 1) {
+
+            showAlert(
+                "Number of students must be at least 1.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /* -----------------------------------------
+           DOUBLE-BOOKING CHECK
+           
+           This is the main Branch / Pull Request
+           feature required by the specification.
+        ----------------------------------------- */
+
+        const conflict =
+            findDoubleBookingConflict(
+                lab,
+                date,
+                startTime,
+                endTime
+            );
+
+
+        if (conflict) {
+
+            showAlert(
+                `Double booking detected. ${conflict.id} ` +
+                `(${conflict.teacherName}) already has a ` +
+                `${conflict.status.toLowerCase()} reservation ` +
+                `in ${lab} from ${conflict.startTime} ` +
+                `to ${conflict.endTime} on ${conflict.date}.`,
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /* -----------------------------------------
+           CREATE RESERVATION
+        ----------------------------------------- */
+
+        const reservation = {
+
+            id: generateReservationId(),
+
+            teacherName,
+
+            lab,
+
+            date,
+
+            startTime,
+
+            endTime,
+
+            purpose,
+
+            numberOfStudents,
+
+            status: "Pending",
+
+            rejectionReason: "",
+
+            createdAt: new Date().toISOString()
+
+        };
+
+
+        reservations.push(reservation);
+
+
+        showAlert(
+            `Reservation ${reservation.id} submitted successfully. ` +
+            `Its initial status is Pending.`,
+            "success"
+        );
+
+
+        resetReservationForm();
+
+        updateDashboard();
+
+        renderReservations();
+
+    }
+
+
+    /* ==========================================================
+       DOUBLE-BOOKING CHECK
+       
+       Requirement:
+       Do not allow a reservation that overlaps with
+       a Pending or Approved reservation in the same
+       laboratory on the same date.
+    ========================================================== */
+
+    function findDoubleBookingConflict(
+        lab,
+        date,
+        startTime,
+        endTime,
+        excludeId = null
+    ) {
+
+        const conflict =
+            reservations.find(reservation => {
+
+                /* Ignore itself when editing/checking */
+                if (
+                    excludeId &&
+                    reservation.id === excludeId
+                ) {
+                    return false;
+                }
+
+
+                /*
+                    Rejected and Cancelled reservations
+                    do not block laboratory availability.
+                */
+
+                if (
+                    reservation.status !== "Pending" &&
+                    reservation.status !== "Approved"
+                ) {
+                    return false;
+                }
+
+
+                /*
+                    Different laboratory = no conflict.
+                */
+
+                if (reservation.lab !== lab) {
+                    return false;
+                }
+
+
+                /*
+                    Different date = no conflict.
+                */
+
+                if (reservation.date !== date) {
+                    return false;
+                }
+
+
+                /*
+                    Time overlap formula:
+
+                    Existing Start < New End
+                    AND
+                    Existing End > New Start
+
+                    This allows:
+
+                    08:00 - 10:00
+                    10:00 - 12:00
+
+                    because they touch but do not overlap.
+                */
+
+                const overlaps =
+                    reservation.startTime < endTime &&
+                    reservation.endTime > startTime;
+
+
+                return overlaps;
+
+            });
+
+
+        return conflict || null;
+
+    }
+
+
+    /* ==========================================================
+       ID GENERATION
+    ========================================================== */
+
+    function generateReservationId() {
+
+        let highestNumber = 0;
+
+
+        reservations.forEach(reservation => {
+
+            const match =
+                reservation.id.match(/RES-(\d+)/);
+
+            if (match) {
+
+                highestNumber =
+                    Math.max(
+                        highestNumber,
+                        Number(match[1])
+                    );
+
+            }
+
+        });
+
+
+        return `RES-${String(highestNumber + 1)
+            .padStart(3, "0")}`;
+
+    }
+
+
+    /* ==========================================================
+       DASHBOARD
+    ========================================================== */
+
+    function updateDashboard() {
+
+        const total =
+            reservations.length;
+
+        const pending =
+            reservations.filter(
+                r => r.status === "Pending"
+            ).length;
+
+        const approved =
+            reservations.filter(
+                r => r.status === "Approved"
+            ).length;
+
+        const rejected =
+            reservations.filter(
+                r => r.status === "Rejected"
+            ).length;
+
+        const cancelled =
+            reservations.filter(
+                r => r.status === "Cancelled"
+            ).length;
+
+
+        document.getElementById("totalCount")
+            .textContent = total;
+
+        document.getElementById("pendingCount")
+            .textContent = pending;
+
+        document.getElementById("approvedCount")
+            .textContent = approved;
+
+        document.getElementById("rejectedCount")
+            .textContent = rejected;
+
+        document.getElementById("cancelledCount")
+            .textContent = cancelled;
+
+
+        renderRecentReservations();
+
+    }
+
+
+    function renderRecentReservations() {
+
+        const body =
+            document.getElementById(
+                "recentReservationsBody"
+            );
+
+
+        const recent =
+            [...reservations]
+                .sort(
+                    (a, b) =>
+                        new Date(b.createdAt) -
+                        new Date(a.createdAt)
+                )
+                .slice(0, 5);
+
+
+        if (!recent.length) {
+
+            body.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <strong>No reservations</strong>
+                            There are no reservations yet.
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            return;
+
+        }
+
+
+        body.innerHTML =
+            recent.map(reservation => `
+
+                <tr>
+
+                    <td>
+                        <strong>${escapeHTML(reservation.id)}</strong>
+                    </td>
+
+                    <td>
+                        ${escapeHTML(reservation.teacherName)}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(reservation.lab)}
+                    </td>
+
+                    <td>
+                        ${formatDate(reservation.date)}
+                    </td>
+
+                    <td>
+                        ${formatTime(reservation.startTime)}
+                        -
+                        ${formatTime(reservation.endTime)}
+                    </td>
+
+                    <td>
+                        ${reservation.numberOfStudents}
+                    </td>
+
+                    <td>
+                        ${getStatusBadge(reservation.status)}
+                    </td>
+
+                </tr>
+
+            `).join("");
+
+    }
+
+
+    /* ==========================================================
+       RESERVATION TABLE
+    ========================================================== */
+
+    function renderReservations() {
+
+        const body =
+            document.getElementById(
+                "reservationsBody"
+            );
+
+
+        const search =
+            document.getElementById(
+                "searchInput"
+            ).value.toLowerCase().trim();
+
+
+        const lab =
+            document.getElementById(
+                "filterLab"
+            ).value;
+
+
+        const date =
+            document.getElementById(
+                "filterDate"
+            ).value;
+
+
+        const status =
+            document.getElementById(
+                "filterStatus"
+            ).value;
+
+
+        const filtered =
+            reservations.filter(reservation => {
+
+                const matchesSearch =
+                    !search ||
+                    reservation.id.toLowerCase().includes(search) ||
+                    reservation.teacherName.toLowerCase().includes(search) ||
+                    reservation.purpose.toLowerCase().includes(search);
+
+
+                const matchesLab =
+                    !lab ||
+                    reservation.lab === lab;
+
+
+                const matchesDate =
+                    !date ||
+                    reservation.date === date;
+
+
+                const matchesStatus =
+                    !status ||
+                    reservation.status === status;
+
+
+                return (
+                    matchesSearch &&
+                    matchesLab &&
+                    matchesDate &&
+                    matchesStatus
+                );
+
+            });
+
+
+        filtered.sort((a, b) => {
+
+            if (a.date !== b.date) {
+                return a.date.localeCompare(b.date);
+            }
+
+            return a.startTime.localeCompare(
+                b.startTime
+            );
+
+        });
+
+
+        if (!filtered.length) {
+
+            body.innerHTML = `
+
+                <tr>
+
+                    <td colspan="9">
+
+                        <div class="empty-state">
+
+                            <strong>
+                                No reservations found
+                            </strong>
+
+                            Try changing your search or filter.
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
+
+        }
+
+
+        body.innerHTML =
+            filtered.map(renderReservationRow)
+                .join("");
+
+    }
+
+
+    function renderReservationRow(reservation) {
+
+        const canApprove =
+            reservation.status === "Pending";
+
+        const canReject =
+            reservation.status === "Pending";
+
+        const canCancel =
+            reservation.status === "Pending" ||
+            reservation.status === "Approved";
+
+
+        return `
+
+            <tr>
+
+                <td>
+                    <strong>
+                        ${escapeHTML(reservation.id)}
+                    </strong>
+                </td>
+
+                <td>
+                    ${escapeHTML(reservation.teacherName)}
+                </td>
+
+                <td>
+                    ${escapeHTML(reservation.lab)}
+                </td>
+
+                <td>
+                    ${formatDate(reservation.date)}
+                </td>
+
+                <td>
+                    ${formatTime(reservation.startTime)}
+                    -
+                    ${formatTime(reservation.endTime)}
+                </td>
+
+                <td>
+                    ${reservation.numberOfStudents}
+                </td>
+
+                <td>
+                    <span title="${escapeHTML(reservation.purpose)}">
+                        ${truncate(
+                            reservation.purpose,
+                            28
+                        )}
+                    </span>
+                </td>
+
+                <td>
+                    ${getStatusBadge(reservation.status)}
+                </td>
+
+                <td>
+
+                    <div class="actions">
+
+                        ${
+                            canApprove
+                            ? `
+                                <button
+                                    class="btn btn-success btn-small"
+                                    onclick="approveReservation('${reservation.id}')">
+                                    Approve
+                                </button>
+                            `
+                            : ""
+                        }
+
+                        ${
+                            canReject
+                            ? `
+                                <button
+                                    class="btn btn-danger btn-small"
+                                    onclick="openRejectModal('${reservation.id}')">
+                                    Reject
+                                </button>
+                            `
+                            : ""
+                        }
+
+                        ${
+                            canCancel
+                            ? `
+                                <button
+                                    class="btn btn-secondary btn-small"
+                                    onclick="cancelReservation('${reservation.id}')">
+                                    Cancel
+                                </button>
+                            `
+                            : ""
+                        }
+
+                        ${
+                            reservation.status === "Rejected"
+                            ? `
+                                <span
+                                    title="${escapeHTML(reservation.rejectionReason)}"
+                                    style="font-size:11px;color:#991b1b;">
+                                    Reason
+                                </span>
+                            `
+                            : ""
+                        }
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+
+    /* ==========================================================
+       APPROVE
+    ========================================================== */
+
+    function approveReservation(id) {
+
+        const reservation =
+            reservations.find(
+                r => r.id === id
+            );
+
+
+        if (!reservation) {
+
+            showAlert(
+                "Reservation could not be found.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /*
+            Only Pending reservations can be approved.
+        */
+
+        if (reservation.status !== "Pending") {
+
+            showAlert(
+                "Only Pending reservations can be approved.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /*
+            Re-run double-booking check before approval.
+
+            This protects against a situation where another
+            reservation was added after this reservation was
+            initially submitted.
+        */
+
+        const conflict =
+            findDoubleBookingConflict(
+                reservation.lab,
+                reservation.date,
+                reservation.startTime,
+                reservation.endTime,
+                reservation.id
+            );
+
+
+        if (conflict) {
+
+            showAlert(
+                `Cannot approve ${reservation.id}. ` +
+                `It conflicts with ${conflict.id}.`,
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        reservation.status = "Approved";
+
+
+        showAlert(
+            `${reservation.id} has been approved.`,
+            "success"
+        );
+
+
+        updateDashboard();
+
+        renderReservations();
+
+        renderSchedule();
+
+    }
+
+
+    /* ==========================================================
+       REJECT
+    ========================================================== */
+
+    function openRejectModal(id) {
+
+        const reservation =
+            reservations.find(
+                r => r.id === id
+            );
+
+
+        if (!reservation) {
+            return;
+        }
+
+
+        if (reservation.status !== "Pending") {
+
+            showAlert(
+                "Only Pending reservations can be rejected.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        document.getElementById(
+            "rejectReservationId"
+        ).value = id;
+
+
+        document.getElementById(
+            "rejectReason"
+        ).value = "";
+
+
+        document.getElementById(
+            "rejectModal"
+        ).classList.add("show");
+
+    }
+
+
+    function closeRejectModal() {
+
+        document.getElementById(
+            "rejectModal"
+        ).classList.remove("show");
+
+    }
+
+
+    function confirmReject() {
+
+        const id =
+            document.getElementById(
+                "rejectReservationId"
+            ).value;
+
+
+        const reason =
+            document.getElementById(
+                "rejectReason"
+            ).value.trim();
+
+
+        if (!reason) {
+
+            showAlert(
+                "A rejection reason is required.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        const reservation =
+            reservations.find(
+                r => r.id === id
+            );
+
+
+        if (!reservation) {
+
+            showAlert(
+                "Reservation could not be found.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        if (reservation.status !== "Pending") {
+
+            showAlert(
+                "This reservation can no longer be rejected.",
+                "error"
+            );
+
+            closeRejectModal();
+
+            return;
+
+        }
+
+
+        reservation.status = "Rejected";
+
+        reservation.rejectionReason = reason;
+
+
+        closeRejectModal();
+
+
+        showAlert(
+            `${reservation.id} has been rejected.`,
+            "success"
+        );
+
+
+        updateDashboard();
+
+        renderReservations();
+
+        renderSchedule();
+
+    }
+
+
+    /* ==========================================================
+       CANCEL
+    ========================================================== */
+
+    function cancelReservation(id) {
+
+        const reservation =
+            reservations.find(
+                r => r.id === id
+            );
+
+
+        if (!reservation) {
+
+            showAlert(
+                "Reservation could not be found.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /*
+            Only Pending or Approved reservations
+            can be cancelled.
+        */
+
+        if (
+            reservation.status !== "Pending" &&
+            reservation.status !== "Approved"
+        ) {
+
+            showAlert(
+                "Rejected or Cancelled reservations cannot be changed again.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        const confirmed =
+            confirm(
+                `Are you sure you want to cancel ${reservation.id}?`
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        reservation.status = "Cancelled";
+
+
+        showAlert(
+            `${reservation.id} has been cancelled. ` +
+            `The laboratory time is now available again.`,
+            "success"
+        );
+
+
+        updateDashboard();
+
+        renderReservations();
+
+        renderSchedule();
+
+    }
+
+
+    /* ==========================================================
+       SCHEDULE
+    ========================================================== */
+
+    function renderSchedule() {
+
+        const lab =
+            document.getElementById(
+                "scheduleLab"
+            ).value;
+
+
+        const date =
+            document.getElementById(
+                "scheduleDate"
+            ).value;
+
+
+        const container =
+            document.getElementById(
+                "scheduleList"
+            );
+
+
+        if (!lab || !date) {
+
+            container.innerHTML = `
+                <div class="empty-state">
+                    <strong>Select a laboratory and date.</strong>
+                    Choose the filters above to view the schedule.
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        /*
+            Pending and Approved reservations are displayed
+            because both occupy/hold the requested time.
+        */
+
+        const schedule =
+            reservations
+                .filter(reservation =>
+                    reservation.lab === lab &&
+                    reservation.date === date &&
+                    (
+                        reservation.status === "Pending" ||
+                        reservation.status === "Approved"
+                    )
+                )
+                .sort((a, b) =>
+                    a.startTime.localeCompare(
+                        b.startTime
+                    )
+                );
+
+
+        if (!schedule.length) {
+
+            container.innerHTML = `
+                <div class="empty-state">
+                    <strong>No reservations scheduled.</strong>
+                    ${lab} is available on ${formatDate(date)}.
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            schedule.map(reservation => `
+
+                <div class="schedule-item">
+
+                    <div class="schedule-time">
+
+                        ${formatTime(reservation.startTime)}
+                        -
+                        ${formatTime(reservation.endTime)}
+
+                    </div>
+
+                    <div class="schedule-main">
+
+                        <strong>
+                            ${escapeHTML(
+                                reservation.teacherName
+                            )}
+                        </strong>
+
+                        <span>
+                            ${escapeHTML(
+                                reservation.purpose
+                            )}
+                            ·
+                            ${reservation.numberOfStudents}
+                            students
+                        </span>
+
+                    </div>
+
+                    <div>
+                        ${getStatusBadge(
+                            reservation.status
+                        )}
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            ${escapeHTML(
+                                reservation.id
+                            )}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            `).join("");
+
+    }
+
+
+    /* ==========================================================
+       FILTERS
+    ========================================================== */
+
+    function clearFilters() {
+
+        document.getElementById(
+            "searchInput"
+        ).value = "";
+
+        document.getElementById(
+            "filterLab"
+        ).value = "";
+
+        document.getElementById(
+            "filterDate"
+        ).value = "";
+
+        document.getElementById(
+            "filterStatus"
+        ).value = "";
+
+
+        renderReservations();
+
+    }
+
+
+    /* ==========================================================
+       FORM RESET
+    ========================================================== */
+
+    function resetReservationForm() {
+
+        document.getElementById(
+            "reservationForm"
+        ).reset();
+
+
+        document.getElementById(
+            "capacityInfo"
+        ).textContent =
+            "Select a laboratory to see its capacity.";
+
+    }
+
+
+    /* ==========================================================
+       STATUS BADGE
+    ========================================================== */
+
+    function getStatusBadge(status) {
+
+        const classes = {
+
+            Pending: "status-pending",
+
+            Approved: "status-approved",
+
+            Rejected: "status-rejected",
+
+            Cancelled: "status-cancelled"
+
+        };
+
+
+        return `
+            <span class="status ${classes[status]}">
+                ${status}
+            </span>
+        `;
+
+    }
+
+
+    /* ==========================================================
+       ALERT MESSAGES
+    ========================================================== */
+
+    function showAlert(message, type = "success") {
+
+        const container =
+            document.getElementById(
+                "alertContainer"
+            );
+
+
+        const alert =
+            document.createElement("div");
+
+
+        alert.className =
+            `alert ${type}`;
+
+
+        alert.textContent =
+            message;
+
+
+        container.appendChild(alert);
+
+
+        setTimeout(() => {
+
+            alert.style.opacity = "0";
+
+            alert.style.transform =
+                "translateX(30px)";
+
+            setTimeout(() => {
+
+                alert.remove();
+
+            }, 250);
+
+        }, 4500);
+
+    }
+
+
+    /* ==========================================================
+       FORMAT HELPERS
+    ========================================================== */
+
+    function formatDate(dateString) {
+
+        if (!dateString) {
+            return "";
+        }
+
+
+        const date =
+            new Date(
+                `${dateString}T00:00:00`
+            );
+
+
+        return date.toLocaleDateString(
+            "en-US",
+            {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            }
+        );
+
+    }
+
+
+    function formatTime(time) {
+
+        if (!time) {
+            return "";
+        }
+
+
+        const [hours, minutes] =
+            time.split(":");
+
+
+        const date =
+            new Date();
+
+
+        date.setHours(
+            Number(hours),
+            Number(minutes),
+            0,
+            0
+        );
+
+
+        return date.toLocaleTimeString(
+            "en-US",
+            {
+                hour: "numeric",
+                minute: "2-digit"
+            }
+        );
+
+    }
+
+
+    function truncate(text, maxLength) {
+
+        if (text.length <= maxLength) {
+            return escapeHTML(text);
+        }
+
+
+        return escapeHTML(
+            text.substring(0, maxLength)
+        ) + "...";
+
+    }
+
+
+    function escapeHTML(value) {
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    /* ==========================================================
+       MODAL OUTSIDE CLICK
+    ========================================================== */
+
+    document.getElementById("rejectModal")
+        .addEventListener("click", function(event) {
+
+            if (event.target === this) {
+                closeRejectModal();
+            }
+
+        });
+
+
+    /* ==========================================================
+       KEYBOARD SUPPORT
+    ========================================================== */
+
+    document.addEventListener("keydown", function(event) {
+
+        if (event.key === "Escape") {
+            closeRejectModal();
+        }
+
+    });
+
+</script>
+
+</body>
+</html>
